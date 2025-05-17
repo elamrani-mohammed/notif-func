@@ -20,7 +20,7 @@ export default async function sendNotification(context) {
   try {
     // Initialize Appwrite client
     const client = new Client()
-      .setEndpoint(process.env.APPWRITE_FUNCTION_ENDPOINT)
+      .setEndpoint(process.env.APPWRITE_ENDPOINT)
       .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
       .setKey(process.env.APPWRITE_API_KEY);
 
