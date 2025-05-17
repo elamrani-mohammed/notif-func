@@ -1,18 +1,6 @@
 import { Client, Databases, Query } from 'node-appwrite';
 import { Expo } from 'expo-server-sdk';
 //
-// type Context = {
-//   req: any;
-//   res: any;st
-//   log: (msg: any) => void;
-//   error: (msg: any) => void;
-// };
-//
-// type Payload = {
-//   userId: string;
-//   title: string;
-//   message: string;
-// };
 
 export default async function sendNotification(context) {
   const { req, res, log, error } = context;
@@ -69,7 +57,7 @@ export default async function sendNotification(context) {
 
     try {
       const ticket = await expo.sendPushNotificationsAsync([notification]);
-      log('Push notification sent:', ticket);
+      log(`Push notification sent:${ticket}`);
 
       return res.json({
         success: true,
@@ -77,17 +65,18 @@ export default async function sendNotification(context) {
         ticket,
       });
     } catch (err) {
-      error('Error sending push notification:', err);
+      error(`Error sending push notification:${err}`);
       return res.json({
         success: false,
         message: 'Failed to send notification',
       });
     }
   } catch (err) {
-    error('Function error:', err);
+    error(`Function error:${err}`);
     return res.json({
       success: false,
       message: 'Internal server error',
+      last_used,
     });
   }
 }
