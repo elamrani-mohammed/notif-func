@@ -28,6 +28,7 @@ export default async function sendNotification(context) {
 
     // Parse the payload
     const payload = JSON.parse(req.body);
+    log(payload);
     const { userId, title, message } = payload;
 
     // Get user's push token from the database
