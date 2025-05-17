@@ -1,35 +1,92 @@
-import { Client, Users } from 'node-appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
+import { Expo } from 'expo-server-sdk';
+//
+// type Context = {
+//   req: any;
+//   res: any;st
+//   log: (msg: any) => void;
+//   error: (msg: any) => void;
+// };
+//
+// type Payload = {
+//   userId: string;
+//   title: string;
+//   message: string;
+// };
 
-// This Appwrite function will be executed every time your function is triggered
-export default async ({ req, res, log, error }) => {
-  // You can use the Appwrite SDK to interact with other services
-  // For this example, we're using the Users service
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
-    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(req.headers['x-appwrite-key'] ?? '');
-  const users = new Users(client);
+export default async function sendNotification(context) {
+  const { req, res, log, error } = context;
 
   try {
-    const response = await users.list();
-    // Log messages and errors to the Appwrite Console
-    // These logs won't be seen by your end users
-    log(`Total users: ${response.total}`);
-  } catch(err) {
-    error("Could not list users: " + err.message);
-  }
+    // Initialize Appwrite client
+    const client = new Client()
+      .setEndpoint(process.env.APPWRITE_FUNCTION_ENDPOINT)
+      .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
 
-  // The req object contains the request data
-  if (req.path === "/ping") {
-    // Use res object to respond with text(), json(), or binary()
-    // Don't forget to return a response!
-    return res.text("Pong");
-  }
+    const databases = new Databases(client);
 
-  return res.json({
-    motto: "Build like a team of hundreds_",
-    learn: "https://appwrite.io/docs",
-    connect: "https://appwrite.io/discord",
-    getInspired: "https://builtwith.appwrite.io",
-  });
-};
+    // Parse the payload
+    const payload = JSON.parse(req.body);
+    const { userId, title, message } = payload;
+
+    // Get user's push token from the database
+    const tokens = await databases.listDocuments(
+      process.env.DATABASE_ID,
+      process.env.DEVICE_TOKENS_COLLECTION_ID,
+      [Query.equal('user_id', userId)]
+    );
+
+    if (tokens.documents.length === 0) {
+      return res.json({
+        success: false,
+        message: 'No push token found for user',
+      });
+    }
+
+    // Initialize Expo SDK client
+    const expo = new Expo();
+    const pushToken = tokens.documents[0].token;
+
+    // Validate the push token
+    if (Expo.isExpoPushToken(pushToken)) {
+      error(`Push token ${pushToken} is not a valid Expo push token`);
+      return res.json({
+        success: false,
+        message: 'Invalid push token',
+      });
+    }
+
+    // Create the notification message
+    const notification = {
+      to: pushToken,
+      sound: 'default',
+      title: title,
+      body: message,
+      data: { userId },
+    };
+
+    try {
+      const ticket = await expo.sendPushNotificationsAsync([notification]);
+      log('Push notification sent:', ticket);
+
+      return res.json({
+        success: true,
+        message: 'Notification sent successfully',
+        ticket,
+      });
+    } catch (err) {
+      error('Error sending push notification:', err);
+      return res.json({
+        success: false,
+        message: 'Failed to send notification',
+      });
+    }
+  } catch (err) {
+    error('Function error:', err);
+    return res.json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+}
