@@ -52,24 +52,12 @@ export default async function main({ req, res, log, error }) {
       });
     }
 
-    // const pushToken = tokenDocs.documents[0].push_token;
-    const pushToken = tokenDoc.push_token;
-	
-    if (pushToken) log(pushToken);
+    const pushToken = tokenDoc.documents[0].push_token;
 
-    // if (Expo.isExpoPushToken(pushToken)) {
-    //   await databases.updateDocument(
-    //     process.env.DATABASE_ID,
-    //     process.env.NOTIFICATIONS_COLLECTION_ID,
-    //     $id,
-    //     { status: 'failed', error: 'Invalid Expo push token' }
-    //   );
-    //   return res.json({
-    //     success: false,
-    //     status: 'failed',
-    //     error: 'Invalid Expo push token',
-    //   });
-    // }
+    if (!pushToken) {
+      log('Push token is missing in device token doc.');
+    }
+    if (pushToken) log(pushToken);
 
     if (!pushToken || !Expo.isExpoPushToken(pushToken)) {
       const errMsg = `Invalid Expo push token: ${pushToken}`;
