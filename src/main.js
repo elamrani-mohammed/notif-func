@@ -62,6 +62,7 @@ export default async function main({ req, res, log, error }) {
       $id,
       { status: 'sent' }
     );
+    return res.json({ success: true, message: 'Notifications sent', tickets });
   } catch (err) {
     await databases.updateDocument(
       process.env.DATABASE_ID,
@@ -69,6 +70,12 @@ export default async function main({ req, res, log, error }) {
       $id,
       { status: 'failed', error: err.message }
     );
+    error('Error in function:', err);
     error(err.message);
+    return res.json({
+      success: false,
+      message: 'Internal error',
+      details: err.message,
+    });
   }
 }
