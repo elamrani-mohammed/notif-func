@@ -85,7 +85,7 @@ export default async function main({ req, res, log, error }) {
         data: { userId: user_id },
       },
     ]);
-    log(`reseoiants:${JSON.stringify(res)}`);
+    log(`reseoiants  ${res}`);
 
     await databases.updateDocument(
       process.env.DATABASE_ID,
