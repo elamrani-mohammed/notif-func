@@ -10,7 +10,7 @@ export default async function main({ req, res, log, error }) {
   const databases = new Databases(client);
   const expo = new Expo();
 
-  const notification = JSON.parse(req.body); // contains document info
+  const notification = req.body; // contains document info
   const { user_id, title, message } = notification;
 
   log(`${user_id},${title}${message}`);
