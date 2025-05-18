@@ -53,7 +53,7 @@ export default async function main({ req, res, log, error }) {
     }
 
     // const pushToken = tokenDocs.documents[0].push_token;
-    const pushToken = tokenDoc.push_token;
+    const pushToken = tokenDoc.documents[0].push_token;
 
     // if (Expo.isExpoPushToken(pushToken)) {
     //   await databases.updateDocument(
