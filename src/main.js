@@ -12,18 +12,33 @@ export default async function main({ req, res, log, error }) {
 
   const notification =
     typeof req.body === 'string' ? JSON.parse(req.body) : req.body; // contains document info
-  const { user_id, title, message, $id } = notification;
+  const { user_id, title, message, $id, device_token_id } = notification;
 
   log(`${user_id},${title}${message}`);
   log(notification);
   try {
-    const tokenDocs = await databases.listDocuments(
+    // const tokenDocs = await databases.listDocuments(
+    //   process.env.DATABASE_ID,
+    //   process.env.DEVICE_TOKENS_COLLECTION_ID,
+    //   [Query.equal('user_id', user_id)]
+
+    // );
+
+    if (!device_token_id) {
+      error('Missing device_token_id in notification');
+      return res.json({
+        success: false,
+        message: 'device_token_id is required',
+      });
+    }
+
+    const tokenDoc = await databases.listDocuments(
       process.env.DATABASE_ID,
       process.env.DEVICE_TOKENS_COLLECTION_ID,
-      [Query.equal('user_id', user_id)]
+      device_token_id
     );
 
-    if (tokenDocs.documents.length === 0) {
+    if (tokenDoc.documents.length === 0) {
       await databases.updateDocument(
         process.env.DATABASE_ID,
         process.env.NOTIFICATIONS_COLLECTION_ID,
@@ -37,27 +52,45 @@ export default async function main({ req, res, log, error }) {
       });
     }
 
-    const pushToken = tokenDocs.documents[0].push_token;
+    // const pushToken = tokenDocs.documents[0].push_token;
+    const pushToken = tokenDoc.push_token;
 
-    if (Expo.isExpoPushToken(pushToken)) {
+    // if (Expo.isExpoPushToken(pushToken)) {
+    //   await databases.updateDocument(
+    //     process.env.DATABASE_ID,
+    //     process.env.NOTIFICATIONS_COLLECTION_ID,
+    //     $id,
+    //     { status: 'failed', error: 'Invalid Expo push token' }
+    //   );
+    //   return res.json({
+    //     success: false,
+    //     status: 'failed',
+    //     error: 'Invalid Expo push token',
+    //   });
+    // }
+
+    if (!pushToken || !Expo.isExpoPushToken(pushToken)) {
+      const errMsg = `Invalid Expo push token: ${pushToken}`;
+      log(errMsg);
+
       await databases.updateDocument(
         process.env.DATABASE_ID,
         process.env.NOTIFICATIONS_COLLECTION_ID,
-        $id,
-        { status: 'failed', error: 'Invalid Expo push token' }
+        notification.$id,
+        {
+          status: 'failed',
+          error: errMsg,
+        }
       );
-      return res.json({
-        success: false,
-        status: 'failed',
-        error: 'Invalid Expo push token',
-      });
+
+      return res.json({ success: false, message: errMsg });
     }
 
     await expo.sendPushNotificationsAsync([
       {
         to: pushToken,
         sound: 'default',
-        title,
+        title: 'Smart Home',
         body: message,
         data: { userId: user_id },
       },
