@@ -103,7 +103,7 @@ export default async function main({ req, res, log, error }) {
       $id,
       { status: 'sent' }
     );
-    return res.json({ success: true, message: 'Notifications sent', tickets });
+    return res.json({ success: true, message: 'Notifications sent' });
   } catch (err) {
     await databases.updateDocument(
       process.env.DATABASE_ID,
