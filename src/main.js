@@ -10,20 +10,10 @@ export default async function main({ req, res, log, error }) {
   const databases = new Databases(client);
   const expo = new Expo();
 
-  const notification =
-    typeof req.body === 'string' ? JSON.parse(req.body) : req.body; // contains document info
+  const notification = req.body; // contains document info
   const { user_id, title, message, $id, device_token_id } = notification;
 
-  log(`${user_id},${title}${message}`);
-  log(notification);
   try {
-    // const tokenDocs = await databases.listDocuments(
-    //   process.env.DATABASE_ID,
-    //   process.env.DEVICE_TOKENS_COLLECTION_ID,
-    //   [Query.equal('user_id', user_id)]
-
-    // );
-
     if (!device_token_id) {
       error('Missing device_token_id in notification');
       return res.json({
@@ -90,7 +80,6 @@ export default async function main({ req, res, log, error }) {
     await databases.updateDocument(
       process.env.DATABASE_ID,
       process.env.NOTIFICATIONS_COLLECTION_ID,
-
       $id,
       { status: 'sent' }
     );
