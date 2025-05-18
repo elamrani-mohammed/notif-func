@@ -30,7 +30,11 @@ export default async function main({ req, res, log, error }) {
         $id,
         { status: 'failed', error: 'No push token found' }
       );
-      return;
+      return res.json({
+        success: false,
+        status: 'failed',
+        error: 'no Token found',
+      });
     }
 
     const pushToken = tokenDocs.documents[0].push_token;
@@ -42,7 +46,11 @@ export default async function main({ req, res, log, error }) {
         $id,
         { status: 'failed', error: 'Invalid Expo push token' }
       );
-      return;
+      return res.json({
+        success: false,
+        status: 'failed',
+        error: 'Invalid Expo push token',
+      });
     }
 
     await expo.sendPushNotificationsAsync([
