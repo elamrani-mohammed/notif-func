@@ -2,6 +2,7 @@ import { Client, Databases, Query } from 'node-appwrite';
 import { Expo } from 'expo-server-sdk';
 
 export default async function main({ req, res, log, error }) {
+  log(`req.payload.$id;:${req.payload.$id}`);
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
@@ -10,7 +11,8 @@ export default async function main({ req, res, log, error }) {
   const databases = new Databases(client);
   const expo = new Expo();
 
-  const notification = req.body; // contains document info
+  const notification =
+    typeof req.body === 'string' ? JSON.parse(req.body) : req.body; // contains document info
   const { user_id, title, message } = notification;
 
   log(`${user_id},${title}${message}`);
