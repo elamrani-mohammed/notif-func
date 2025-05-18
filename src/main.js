@@ -35,7 +35,7 @@ export default async function main({ req, res, log, error }) {
     const tokenDoc = await databases.listDocuments(
       process.env.DATABASE_ID,
       process.env.DEVICE_TOKENS_COLLECTION_ID,
-      device_token_id
+      [Query.equal('$id', device_token_id)]
     );
 
     if (tokenDoc.documents.length === 0) {
