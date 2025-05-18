@@ -76,7 +76,7 @@ export default async function main({ req, res, log, error }) {
       return res.json({ success: false, message: errMsg });
     }
 
-    await expo.sendPushNotificationsAsync([
+    const res = await expo.sendPushNotificationsAsync([
       {
         to: pushToken,
         sound: 'default',
@@ -85,6 +85,7 @@ export default async function main({ req, res, log, error }) {
         data: { userId: user_id },
       },
     ]);
+    log(`reseoiants:${JSON.stringify(res)}`);
 
     await databases.updateDocument(
       process.env.DATABASE_ID,
