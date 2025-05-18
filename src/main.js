@@ -12,6 +12,8 @@ export default async function main({ req, res, log, error }) {
 
   const notification = JSON.parse(req.body); // contains document info
   const { user_id, title, message } = notification;
+
+  log(`${user_id},${title}${message}`);
   log(notification);
   try {
     const tokenDocs = await databases.listDocuments(
@@ -24,7 +26,7 @@ export default async function main({ req, res, log, error }) {
       await databases.updateDocument(
         process.env.DATABASE_ID,
         process.env.NOTIFICATIONS_COLLECTION_ID,
-        notification.$id,
+        notification['$id'],
         { status: 'failed', error: 'No push token found' }
       );
       return;
@@ -36,7 +38,7 @@ export default async function main({ req, res, log, error }) {
       await databases.updateDocument(
         process.env.DATABASE_ID,
         process.env.NOTIFICATIONS_COLLECTION_ID,
-        notification.$id,
+        notification['$id'],
         { status: 'failed', error: 'Invalid Expo push token' }
       );
       return;
@@ -56,15 +58,14 @@ export default async function main({ req, res, log, error }) {
       process.env.DATABASE_ID,
       process.env.NOTIFICATIONS_COLLECTION_ID,
 
-      notification.$id,
+      notification['$id'],
       { status: 'sent' }
     );
   } catch (err) {
     await databases.updateDocument(
       process.env.DATABASE_ID,
       process.env.NOTIFICATIONS_COLLECTION_ID,
-
-      notification.$id,
+      notification['$id'],
       { status: 'failed', error: err.message }
     );
     error(err.message);
