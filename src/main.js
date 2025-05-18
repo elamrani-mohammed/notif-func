@@ -2,7 +2,6 @@ import { Client, Databases, Query } from 'node-appwrite';
 import { Expo } from 'expo-server-sdk';
 
 export default async function main({ req, res, log, error }) {
-  log(req.variables);
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
