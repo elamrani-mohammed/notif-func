@@ -14,13 +14,13 @@ export default async function main({ req, res, log, error }) {
   const { user_id, title, message, $id, device_token_id } = notification;
 
   try {
-    if (!device_token_id) {
-      error('Missing device_token_id in notification');
-      return res.json({
-        success: false,
-        message: 'device_token_id is required',
-      });
-    }
+    // if (!device_token_id) {
+    //   error('Missing device_token_id in notification');
+    //   return res.json({
+    //     success: false,
+    //     message: 'device_token_id is required',
+    //   });
+    // }
 
     const tokenDoc = await databases.listDocuments(
       process.env.DATABASE_ID,
