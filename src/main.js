@@ -16,7 +16,7 @@ export default async function main({ req, res, log, error }) {
   try {
     // if (!device_token_id) {
     //   error('Missing device_token_id in notification');
-    //   return res.json({
+    //   return ({
     //     success: false,
     //     message: 'device_token_id is required',
     //   });
@@ -35,11 +35,11 @@ export default async function main({ req, res, log, error }) {
         $id,
         { status: 'failed', error: 'No push token found' }
       );
-      return res.json({
+      return {
         success: false,
         status: 'failed',
         error: 'no Token found',
-      });
+      };
     }
 
     const pushToken = tokenDoc.documents[0].push_token;
@@ -63,7 +63,7 @@ export default async function main({ req, res, log, error }) {
         }
       );
 
-      return res.json({ success: false, message: errMsg });
+      return { success: false, message: errMsg };
     }
 
     const res = await expo.sendPushNotificationsAsync([
@@ -83,7 +83,7 @@ export default async function main({ req, res, log, error }) {
       $id,
       { status: 'sent' }
     );
-    return res.json({ success: true, message: 'Notifications sent' });
+    return { success: true, message: 'Notifications sent' };
   } catch (err) {
     await databases.updateDocument(
       process.env.DATABASE_ID,
@@ -93,10 +93,10 @@ export default async function main({ req, res, log, error }) {
     );
     error('Error in function:', err);
     error(err.message);
-    return res.json({
+    return {
       success: false,
       message: 'Internal error',
       details: err.message,
-    });
+    };
   }
 }
